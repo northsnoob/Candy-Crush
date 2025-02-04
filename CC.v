@@ -12,13 +12,21 @@ module CC(
 );
 reg [4:0] candy_matrix [0:35];
 
-parameter color_Red    = 5'b00000,
-          color_Blue   = 5'b00001,
-          color_Green  = 5'b00010,
-          color_Yellow = 5'b00011,
-          color_Orange = 5'b00100,
-          color_Purple = 5'b00101,
-          color_Empty  = 5'b00111;
+// parameter color_Red    = 5'b00000,
+//           color_Blue   = 5'b00001,
+//           color_Green  = 5'b00010,
+//           color_Yellow = 5'b00011,
+//           color_Orange = 5'b00100,
+//           color_Purple = 5'b00101,
+//           color_Empty  = 5'b00111;
+
+parameter color_Red    = 3'b000,
+          color_Blue   = 3'b001,
+          color_Green  = 3'b010,
+          color_Yellow = 3'b011,
+          color_Orange = 3'b100,
+          color_Purple = 3'b101,
+          color_Empty  = 3'b111;
 
 parameter action_Up    = 2'b00,
           action_Down  = 2'b01,
@@ -27,7 +35,7 @@ parameter action_Up    = 2'b00,
 
 parameter stripe_horizontal = 1'b0,
           stripe_vertical   = 1'b1;
-
+assign project_in_p = (in_starting_pos[5:3])+in_starting_pos[2:0];
 assign project_p = (row_d_six)+col;
 assign row_d_six = row*6;
 assign col_d_six = 6;
@@ -68,7 +76,10 @@ always@(posedge clk or negedge rst_n)begin
         set_color_count <= 0;
     end else begin
         if(in_valid_1 && set_color_count!=36)begin // not must
-            candy_matrix [set_color_count] <= in_color;
+            candy_matrix [set_color_count][2:0] <= in_color;
+            
+            candy_matrix [project_in_p][2:0] <= in_color;
+
             set_color_count <= set_color_count+1;
         end else if (!in_valid_1)begin
             set_color_count <= 0;
