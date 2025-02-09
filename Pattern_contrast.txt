@@ -1,0 +1,8 @@
+in_color[2:0]*36          (108 bits)+
+in_starting_pos[5:3]*4    (12 bits)+
+in_starting_pos[2:0]*4    (12 bits)+
+in_stripe*4               (4 bits)+
+in_starting_pos[5:3]*10   (30 bits)+
+in_starting_pos[2:0]*10   (30 bits)+
+in_action[1:0]*10         (20 bits)+
+out_score[6:0]            (7 bits)+
