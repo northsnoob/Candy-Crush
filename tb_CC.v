@@ -57,8 +57,8 @@ integer i;
 task set_candy;begin
     // integer i;
     first_four_cycle = 0;
+    @(negedge clk);
     for(i=0;i<36;i=i+1)begin
-        @(negedge clk);
         in_valid_1 = 1;
         // gt_in_color = pattern[(pat_in_color_max)-i*3:(pat_in_color_max)-i*3-2];
         // gt_in_starting_pos = {pattern[pat_in_stripe_row_max-first_four_cycle*3:pat_in_stripe_row_max-first_four_cycle*3-2],
@@ -73,6 +73,7 @@ task set_candy;begin
         gt_in_starting_pos[2] = pattern[pat_in_stripe_col_max-first_four_cycle*3];
         gt_in_starting_pos[1] = pattern[pat_in_stripe_col_max-first_four_cycle*3-1];
         gt_in_starting_pos[0] = pattern[pat_in_stripe_col_max-first_four_cycle*3-2];
+        @(negedge clk);
         first_four_cycle = first_four_cycle + 1;
     end
     @(negedge clk);
@@ -118,10 +119,10 @@ reg fail_id [3:7];
 integer  k,u;
 reg [9:0] success;
 initial begin
-    $readmemb("./Pattern.dat", pattern_file);
+    $readmemb("C:\\Users\\USER\\Desktop\\verilog_Exercise\\CC\\Pattern.dat", pattern_file);
     in_valid_2 = 0;
     in_valid_1 = 0;
-    error = 0;
+    success = 0;
     fail_id[3] = 0;
     wait(rst_n==0);
     wait(rst_n==1);
@@ -132,7 +133,7 @@ initial begin
     for (u=0; u < SAMPLE_N; u = u + 1) begin
         pattern = pattern_file[u];
         set_candy();
-        @(negedge clk);
+        // @(negedge clk);
         @(negedge clk);
         set_action();
         // wait(out_valid);
@@ -145,7 +146,7 @@ initial begin
             success = success+1;
         @(negedge clk);
     end
-    $display("    success %3d/%3d  ",error,SAMPLE_N);
+    $display("    success %3d/%3d  ",success,SAMPLE_N);
     $display("******************************************************");
     for(i=3; i<=7;i=i+1)
         if(fail_id[i])
