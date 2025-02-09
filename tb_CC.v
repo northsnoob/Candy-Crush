@@ -29,9 +29,15 @@ always
 initial begin
     force clk = 0;
     rst_n = 0;
-    #(PERIOD) rst_n = 1;
-    #(PERIOD) release clk;
+    #(PERIOD/2) rst_n = 1;
+    #(PERIOD/2) release clk;
 end
+task YOU_PASS_task; begin
+    $display ("--------------------------------------------------------------------");
+    $display ("                         Congratulations!                           ");
+    $display ("                  You have passed all patterns!                     ");
+    $display ("--------------------------------------------------------------------");
+end endtask
 parameter SAMPLE_N = 5;
 parameter PATTERN_BITS = 223;
 reg [PATTERN_BITS-1:0] pattern_file [0:SAMPLE_N-1];
