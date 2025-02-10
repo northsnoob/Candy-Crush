@@ -82,14 +82,15 @@ task set_candy;begin
         @(negedge clk);
         first_four_cycle = first_four_cycle + 1;
     end
-    @(negedge clk);
+    // @(negedge clk);
     in_valid_1 = 0;
+    @(negedge clk);
 end
 endtask
 task set_action;begin
     // integer i;
+    @(negedge clk);
     for(i=0;i<10;i=i+1)begin
-        @(negedge clk);
         in_valid_2 = 1;
         // gt_in_starting_pos= {pattern[pat_in_action_row_max-i*3:pat_in_action_row_max-i*3-2],
         //                      pattern[pat_in_action_col_max-i*3:pat_in_action_col_max-i*3-2]};
@@ -102,11 +103,12 @@ task set_action;begin
         gt_in_starting_pos[0] = pattern[pat_in_action_col_max-i*3-2];
         gt_in_action[1] =  pattern[pat_in_action_max-i*2];
         gt_in_action[0] =  pattern[pat_in_action_max-i*2-1];
+        @(negedge clk);
         
     end 
-    @(negedge clk);
     in_valid_2 = 0;
     ans_out_score = pattern[pat_out_score_max:pat_out_score_max-6];
+    @(negedge clk);
 end
 endtask
 assign in_color = (in_valid_1)? gt_in_color:3'dx;
@@ -119,15 +121,17 @@ always@(negedge clk)begin
     else timing_count <= timing_count+1;
 end
 assign gt_out_score = (out_valid)? ans_out_score:7'd0;
-wire score_correct = (gt_out_score==out_score);
+// wire score_correct = (gt_out_score===out_score);
+reg score_correct;
 // reg [2:0] fail_count;
 reg fail_id [3:7];
 integer  k,u;
 reg [9:0] success;
 initial begin
-    $readmemb("C:\\Users\\USER\\Desktop\\verilog_Exercise\\CC\\Pattern.dat", pattern_file);
+    $readmemb("./Pattern.dat", pattern_file);
     in_valid_2 = 0;
     in_valid_1 = 0;
+    score_correct = 1;
     success = 0;
     fail_id[3] = 0;
     wait(rst_n==0);
@@ -140,47 +144,83 @@ initial begin
         pattern = pattern_file[u];
         set_candy();
         // @(negedge clk);
-        @(negedge clk);
+        // @(negedge clk);
         set_action();
-        // wait(out_valid);
-        for (k=0;k<1000;k=k+1)begin
-          @(negedge clk);
-          if(out_valid)
-            k=1000;
-        end
-        if(ans_out_score===out_score)
+        wait(out_valid);
+        #(0.05) score_correct = (ans_out_score===out_score);
+        // for (k=0;k<1000;k=k+1)begin
+        //     @(negedge clk);
+        //     if(out_valid)
+        //         k=1000;
+        // end
+        if(score_correct)
             success = success+1;
-        @(negedge clk);
+        repeat(3) @(negedge clk);
+        
     end
-    $display("    success %3d/%3d  ",success,SAMPLE_N);
-    $display("******************************************************");
-    for(i=3; i<=7;i=i+1)
-        if(fail_id[i])
-            $display("*                  SPEC %d IS FAIL                   *",i);
-    $display("******************************************************");
+    $display("    Success %3d/%3d  ",success,SAMPLE_N);
+    // $display("******************************************************");
+    // for(i=3; i<=7;i=i+1)
+    //     if(fail_id[i])
+    //         $display("*                  SPEC %d IS FAIL                   *",i);
+    // $display("******************************************************");
+    YOU_PASS_task();
     #(PERIOD*10) $finish;
 end
 always@(posedge rst_n)
-    if(out_valid!=0||out_score!=0)
-        fail_id[3] <= 1'b1;
+    if(out_valid!=0||out_score!=0)begin
+        // fail_id[3] <= 1'b1;
+        $display("*************************************************************************");
+        $display("*                  SPEC 3 IS FAIL                    ");
+        $display("*   out_valid & out_score shoulde be 0 after initial RESET at t=%8t.  ",$time);
+        $display("*************************************************************************");
+        #30 $finish;
+    end
 reg one_clk;
 initial one_clk=0;
 always@(negedge clk)
     if(out_valid)begin
-        if (one_clk)
+        if (one_clk)begin
             fail_id[4] <= 1'b1;
+            $display("*************************************************************************");
+            $display("*                  SPEC 4 IS FAIL                    ");
+            $display("*   out_valid high is more than 1 cycle at t=%8t.  ",$time);
+            $display("*************************************************************************");
+            #30 $finish;
+        end
         one_clk <= 1;
     end
     else
         one_clk <= 0;
 always@(negedge clk)
     if(timing_count>=500)begin
-        fail_id[5] <= 1'b1;
-        // $display("???");
+        // fail_id[5] <= 1'b1;
+        $display("*************************************************************************");
+        $display("*                  SPEC 5 IS FAIL                    ");
+        $display("*   The execution latency are over 500 cycles at t=%8t.  ",$time);
+        $display("*************************************************************************");
+        #30 $finish;
     end
-always@(negedge score_correct)
-    fail_id[6] <= 1'b1;
-always@(negedge out_valid)
-    if(out_score===0)
-        fail_id[7] <= 1'b1;
+// always@(negedge score_correct)
+initial 
+    @(negedge score_correct);
+    // fail_id[6] <= 1'b1;
+    $display("*************************************************************************");
+    $display("*                  SPEC 6 IS FAIL                    ");
+    $display("*   out_score shoulde be correct after out_valid is high at t=%8t.  ",$time);
+    $display("*************************************************************************");
+    #30 $finish;
+
+always@(negedge out_valid)begin
+// initial begin
+    // @(negedge out_valid);
+    if(out_score===0) begin
+        // fail_id[7] <= 1'b1;
+        $display("*************************************************************************");
+        $display("*                  SPEC 7 IS FAIL                    ");
+        $display("*   out_score shoulde be 0 after out_valid is pulled down at t=%8t.  ",$time);
+        $display("*************************************************************************");
+        #30 $finish;
+    end
+end
 endmodule
