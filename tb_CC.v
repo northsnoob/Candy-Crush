@@ -1,5 +1,4 @@
 `timescale 10ns/1ns
-`include "CC.v"
 module tb_CC(
     
 );
@@ -202,7 +201,7 @@ always@(negedge clk)
         #30 $finish;
     end
 // always@(negedge score_correct)
-initial 
+initial begin
     @(negedge score_correct);
     // fail_id[6] <= 1'b1;
     $display("*************************************************************************");
@@ -210,6 +209,7 @@ initial
     $display("*   out_score shoulde be correct after out_valid is high at t=%8t.  ",$time);
     $display("*************************************************************************");
     #30 $finish;
+end
 
 always@(negedge out_valid)begin
 // initial begin
