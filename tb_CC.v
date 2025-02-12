@@ -1,4 +1,4 @@
-`timescale 10ns/1ns
+`timescale 1ns/1ns
 module tb_CC(
     
 );
@@ -32,12 +32,13 @@ initial begin
     #(PERIOD/2) release clk;
 end
 task YOU_PASS_task; begin
+	$display ("time:%t",$time);
     $display ("--------------------------------------------------------------------");
     $display ("                         Congratulations!                           ");
     $display ("                  You have passed all patterns!                     ");
     $display ("--------------------------------------------------------------------");
 end endtask
-parameter SAMPLE_N = 5;
+parameter SAMPLE_N = 100;
 parameter PATTERN_BITS = 223;
 reg [PATTERN_BITS-1:0] pattern_file [0:SAMPLE_N-1];
 reg [PATTERN_BITS-1:0] pattern;
@@ -127,14 +128,14 @@ reg fail_id [3:7];
 integer  k,u;
 reg [9:0] success;
 initial begin
-    $readmemb("./Pattern.dat", pattern_file);
+    $readmemb("E:\\Code\\250201_CandyCrush\\Pattern.dat", pattern_file);
     in_valid_2 = 0;
     in_valid_1 = 0;
     score_correct = 1;
     success = 0;
     fail_id[3] = 0;
-    wait(rst_n==0);
-    wait(rst_n==1);
+    wait(rst_n===0);
+    wait(rst_n===1);
     fail_id[4] = 0;
     fail_id[5] = 0;
     fail_id[6] = 0;
@@ -146,6 +147,7 @@ initial begin
         // @(negedge clk);
         set_action();
         wait(out_valid);
+        // $display("The execution latency are %d clocks.",timing_count);
         #(0.05) score_correct = (ans_out_score===out_score);
         // for (k=0;k<1000;k=k+1)begin
         //     @(negedge clk);
@@ -171,7 +173,7 @@ always@(posedge rst_n)
         // fail_id[3] <= 1'b1;
         $display("*************************************************************************");
         $display("*                  SPEC 3 IS FAIL                    ");
-        $display("*   out_valid & out_score shoulde be 0 after initial RESET at t=%8t.  ",$time);
+        $display("*   out_valid & out_score shoulde be 0 after initial RESET at %10t.  ",$time);
         $display("*************************************************************************");
         #30 $finish;
     end
@@ -183,7 +185,7 @@ always@(negedge clk)
             fail_id[4] <= 1'b1;
             $display("*************************************************************************");
             $display("*                  SPEC 4 IS FAIL                    ");
-            $display("*   out_valid high is more than 1 cycle at t=%8t.  ",$time);
+            $display("*   out_valid high is more than 1 cycle at %10t.  ",$time);
             $display("*************************************************************************");
             #30 $finish;
         end
@@ -196,7 +198,7 @@ always@(negedge clk)
         // fail_id[5] <= 1'b1;
         $display("*************************************************************************");
         $display("*                  SPEC 5 IS FAIL                    ");
-        $display("*   The execution latency are over 500 cycles at t=%8t.  ",$time);
+        $display("*   The execution latency are over 500 cycles at %10t.  ",$time);
         $display("*************************************************************************");
         #30 $finish;
     end
@@ -204,9 +206,10 @@ always@(negedge clk)
 initial begin
     @(negedge score_correct);
     // fail_id[6] <= 1'b1;
+    $display("    Success %3d/%3d  ",success,SAMPLE_N);
     $display("*************************************************************************");
     $display("*                  SPEC 6 IS FAIL                    ");
-    $display("*   out_score shoulde be correct after out_valid is high at t=%8t.  ",$time);
+    $display("*   out_score shoulde be correct after out_valid is high at %10t.  ",$time);
     $display("*************************************************************************");
     #30 $finish;
 end
@@ -214,11 +217,11 @@ end
 always@(negedge out_valid)begin
 // initial begin
     // @(negedge out_valid);
-    if(out_score===0) begin
+    if(out_score!==0) begin
         // fail_id[7] <= 1'b1;
         $display("*************************************************************************");
         $display("*                  SPEC 7 IS FAIL                    ");
-        $display("*   out_score shoulde be 0 after out_valid is pulled down at t=%8t.  ",$time);
+        $display("*   out_score shoulde be 0 after out_valid is pulled down at %10t.  ",$time);
         $display("*************************************************************************");
         #30 $finish;
     end
