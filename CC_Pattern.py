@@ -39,6 +39,7 @@ class candycrush:
     
     def update_matrix(self):
         clr_matrix = np.zeros(self.MATRIX_N**2).astype(int).reshape(self.MATRIX_N,self.MATRIX_N)
+        dead_matrix = np.zeros(self.MATRIX_N**2).astype(int).reshape(self.MATRIX_N,self.MATRIX_N)
         row_score = 0
         # col_score = 0
         for section in range(2):
@@ -59,46 +60,122 @@ class candycrush:
         clr_matrix = np.transpose(clr_matrix)
         tmp_matrix = np.transpose(tmp_matrix)
         ##################################################################
-        tmp_clr_matrix = clr_matrix.reshape(self.MATRIX_N**2)
+        tmp_clr_matrix = clr_matrix.reshape(self.MATRIX_N**2).copy()
         # print('row_score:',row_score)
+        c8=0
         for (i,stripe_idx) in enumerate(self.candy_stripe_pos):
             stripe_honrizontal = 0
             stripe_vertical = 1
             if tmp_clr_matrix[stripe_idx] and tmp_matrix.reshape(self.MATRIX_N**2)[stripe_idx] != self.EMPTY:
-                # print('條紋炸彈')
+                # print('條紋炸彈',stripe_idx)
                 if self.candy_stripe_type[i] == stripe_honrizontal: #
-                    tmp_score = 1
+                    tmp_score = 0
+                    match_flag = 0
+                    for k in range(4):
+                        if tmp_matrix[self.candy_stripe_row[i]][0+k] == tmp_matrix[self.candy_stripe_row[i]][1+k] == tmp_matrix[self.candy_stripe_row[i]][2+k] != self.EMPTY:
+                            match_flag = 1
+                    if match_flag:
+                        for col in range(self.MATRIX_N):
+                            if col==self.candy_stripe_col[i]:
+                                clr_matrix[self.candy_stripe_row[i]][col] = 1
+                                # print('HI---ssss-----------------')
+                                continue
+                            if tmp_matrix[self.candy_stripe_row[i]][col] != self.EMPTY and \
+                                clr_matrix[self.candy_stripe_row[i]][col] != 1 and clr_matrix[self.candy_stripe_row[i]][col] != 2:
+                            # if tmp_matrix[self.candy_stripe_row[i]][col] != self.EMPTY:
+                                clr_matrix[self.candy_stripe_row[i]][col] = 2;
+                                # tmp_matrix[self.candy_stripe_row[i]][col] = self.EMPTY
+                                row_score += 1
+                        pass
+                    else:
+                        for col in range(self.MATRIX_N):
+                            if col==self.candy_stripe_col[i]:
+                                clr_matrix[self.candy_stripe_row[i]][col] = 1
+                                # print('HI---ssss-----------------')
+                                continue
+                            if tmp_matrix[self.candy_stripe_row[i]][col] != self.EMPTY and \
+                                clr_matrix[self.candy_stripe_row[i]][col] != 2:
+                            # if tmp_matrix[self.candy_stripe_row[i]][col] != self.EMPTY:
+                                clr_matrix[self.candy_stripe_row[i]][col] = 2;
+                                # tmp_matrix[self.candy_stripe_row[i]][col] = self.EMPTY
+                                row_score += 1
+                    '''
                     for k in range(4):
                         # print(tmp_matrix[self.candy_stripe_row[i]])
                         if tmp_matrix[self.candy_stripe_row[i]][0+k] == tmp_matrix[self.candy_stripe_row[i]][1+k] == tmp_matrix[self.candy_stripe_row[i]][2+k] != self.EMPTY:
+                            tmp_score+=1
                             if tmp_score==1:
                                 tmp_score+=1
-                            tmp_score+=1
                     o = np.count_nonzero(clr_matrix[self.candy_stripe_row[i]]);
                     if np.count_nonzero(clr_matrix[self.candy_stripe_row[i]]) == self.MATRIX_N and \
                         tmp_matrix[self.candy_stripe_row[i]].all()!=tmp_matrix[self.candy_stripe_row[i]][self.candy_stripe_col[i]].repeat(6).all():
                         row_score += 2
+                    x=0
+                    # print('clr_matrix=\n',clr_matrix)
                     for col in range(self.MATRIX_N):
+                        if col==self.candy_stripe_col[i]:
+                            clr_matrix[self.candy_stripe_row[i]][col] = 2
+                            # print('HI---ssss-----------------')
+                            continue
                         if tmp_matrix[self.candy_stripe_row[i]][col] != self.EMPTY and \
-                            clr_matrix[self.candy_stripe_row[i]][col] != 1:
+                            clr_matrix[self.candy_stripe_row[i]][col] != 2:
                         # if tmp_matrix[self.candy_stripe_row[i]][col] != self.EMPTY:
-                            clr_matrix[self.candy_stripe_row[i]][col] = 1;
+                            clr_matrix[self.candy_stripe_row[i]][col] = 2;
                             # tmp_matrix[self.candy_stripe_row[i]][col] = self.EMPTY
                             row_score += 1
+                            x+=1
+                    '''
+                    # print('x:',x)
+                    # print('tmp_score:',tmp_score)
                     
+                    # if c8==0:
                     row_score -= tmp_score
+                    #     c8=1
+                    # row_score -= 1
+                    # row_score += o-tmp_score
+                    
                     # print('1')
                 else: # stripe_vertical
                     # print("stripe_vertical")
                     clr_matrix = np.transpose(clr_matrix)
                     tmp_matrix = np.transpose(tmp_matrix)
-                    tmp_score = 1
+                    tmp_score = 0
+                    match_flag = 0
+                    for k in range(4):
+                        if tmp_matrix[self.candy_stripe_col[i]][0+k] == tmp_matrix[self.candy_stripe_col[i]][1+k] == tmp_matrix[self.candy_stripe_col[i]][2+k] != self.EMPTY:
+                            match_flag = 1
+                    if match_flag:
+                        for col in range(self.MATRIX_N):
+                            if col==self.candy_stripe_row[i]:
+                                clr_matrix[self.candy_stripe_col[i]][col] = 1
+                                # print('HI---ssss-----------------')
+                                continue
+                            if tmp_matrix[self.candy_stripe_col[i]][col] != self.EMPTY and \
+                                clr_matrix[self.candy_stripe_col[i]][col] != 1 and clr_matrix[self.candy_stripe_col[i]][col] != 2:
+                            # if tmp_matrix[self.candy_stripe_row[i]][col] != self.EMPTY:
+                                clr_matrix[self.candy_stripe_col[i]][col] = 2;
+                                # tmp_matrix[self.candy_stripe_row[i]][col] = self.EMPTY
+                                row_score += 1
+                        pass
+                    else:
+                        for col in range(self.MATRIX_N):
+                            if col==self.candy_stripe_row[i]:
+                                clr_matrix[self.candy_stripe_col[i]][col] = 1
+                                # print('HI---ssss-----------------')
+                                continue
+                            if tmp_matrix[self.candy_stripe_col[i]][col] != self.EMPTY and \
+                                clr_matrix[self.candy_stripe_col[i]][col] != 2:
+                            # if tmp_matrix[self.candy_stripe_row[i]][col] != self.EMPTY:
+                                clr_matrix[self.candy_stripe_col[i]][col] = 2;
+                                # tmp_matrix[self.candy_stripe_row[i]][col] = self.EMPTY
+                                row_score += 1
+                    '''
                     for k in range(4):
                         # print(tmp_matrix[self.candy_stripe_col[i]])
                         if tmp_matrix[self.candy_stripe_col[i]][0+k] == tmp_matrix[self.candy_stripe_col[i]][1+k] == tmp_matrix[self.candy_stripe_col[i]][2+k] != self.EMPTY:
+                            tmp_score+=1
                             if tmp_score==1:
                                 tmp_score+=1
-                            tmp_score+=1
                     o = np.count_nonzero(clr_matrix[self.candy_stripe_col[i]]);
                     # print('o:',)
                     # print(np.count_nonzero(clr_matrix[self.candy_stripe_col[i]]))
@@ -108,18 +185,32 @@ class candycrush:
                     if np.count_nonzero(clr_matrix[self.candy_stripe_col[i]]) == self.MATRIX_N and \
                         tmp_matrix[self.candy_stripe_col[i]].all()!=tmp_matrix[self.candy_stripe_col[i]][self.candy_stripe_row[i]].repeat(6).all():
                         row_score += 2
+                    x = 0
+                    # print('clr_matrix=\n',np.transpose(clr_matrix))
                     for col in range(self.MATRIX_N):
                         # print(col,self.candy_stripe_row[i],col)
+                        if col==self.candy_stripe_row[i]:
+                            clr_matrix[self.candy_stripe_col[i]][col] = 2;
+                            # print('HI--------------------')
+                            continue
                         if tmp_matrix[self.candy_stripe_col[i]][col] != self.EMPTY and \
-                            clr_matrix[self.candy_stripe_col[i]][col] != 1:
+                            clr_matrix[self.candy_stripe_col[i]][col] != 2:
                         # if tmp_matrix[self.candy_stripe_col[i]][col] != self.EMPTY:
-                            clr_matrix[self.candy_stripe_col[i]][col] = 1;
+                            clr_matrix[self.candy_stripe_col[i]][col] = 2;
                             # tmp_matrix[self.candy_stripe_col[i]][col] = self.EMPTY;
+                            x+=1
                             row_score += 1
+                    # print('x:',x)
                     
                         # print('tmp_score:',tmp_score)
-                    row_score += o-tmp_score
-                                        
+                    # row_score += o-tmp_score
+                    # if c8==0:
+                    #     row_score -= tmp_score
+                    #     c8=1
+                    # row_score -= 1
+                    # print('tmp_score:',tmp_score)
+                    row_score -= tmp_score
+                    '''     
                     clr_matrix = np.transpose(clr_matrix)
                     tmp_matrix = np.transpose(tmp_matrix)
                     # print('2')
@@ -165,10 +256,10 @@ class candycrush:
                 self.candy_stripe_col[i] = col2
                 self.candy_stripe_pos[i] = row2*self.MATRIX_N+col2
                 continue
-            if (_row==row) and (_col==col):
-                self.candy_stripe_row[i] = row2
-                self.candy_stripe_col[i] = col2
-                self.candy_stripe_pos[i] = row2*self.MATRIX_N+col2
+            if (_row==row2) and (_col==col2):
+                self.candy_stripe_row[i] = row
+                self.candy_stripe_col[i] = col
+                self.candy_stripe_pos[i] = row*self.MATRIX_N+col
                 continue # for read
     def get_score(self):
         return self.total_score    
@@ -198,7 +289,7 @@ def comb_clear_bin(*input):
     return clean_str
 import json
 def CC_main(num=0,max=0):
-
+    print("----------------- CNADY CRUSH -----------------")
     a = candycrush();
     a.create_CC_array()
     # print(a.candy_matrix)
@@ -213,9 +304,9 @@ def CC_main(num=0,max=0):
     BIN_stripe_type = DectoBin(a.candy_stripe_type,fill_bits=1)
     BIN_stripe_row = DectoBin(a.candy_stripe_row,fill_bits=3)
     BIN_stripe_col = DectoBin(a.candy_stripe_col,fill_bits=3)
+    print('matrix()\n',a.candy_matrix)
     a.update_matrix()
     tmp_score = a.get_score()
-    # print('matrix(update)\n',a.candy_matrix)
     maxtrix_row_col = np.array([0,1,2,3,4,5])
     actions = np.array([0,1,2,3])
     rnd_row = np.random.choice(maxtrix_row_col, 10, replace=True)
@@ -228,13 +319,14 @@ def CC_main(num=0,max=0):
     BIN_rnd_row = DectoBin(rnd_row,fill_bits=3)
     BIN_rnd_col = DectoBin(rnd_col,fill_bits=3)
     BIN_rnd_action = DectoBin(rnd_action,fill_bits=2)
+    # print('rnd_action',rnd_action)
     for i in range(len(rnd_action)):
-        # print('action row/col',rnd_row[i],rnd_col[i], rnd_action[i])
-        # print('matrix\n',a.candy_matrix)
+        print('action row/col',rnd_row[i],rnd_col[i], rnd_action[i])
+        print('matrix\n',a.candy_matrix)
         a.action(rnd_row[i],rnd_col[i],rnd_action[i])
         a.update_matrix()
-        # print('matrix(update)\n',a.candy_matrix)
-        # print(a.get_score())
+        print('matrix(update)\n',a.candy_matrix)
+        print(a.get_score())
         # exit()
     BIN_score = DectoBin([a.get_score()],fill_bits=7)
     cod = comb_clear_bin(BIN_candy_matrix,BIN_stripe_row,BIN_stripe_col,BIN_stripe_type,
@@ -252,6 +344,7 @@ def CC_main(num=0,max=0):
     # a.matrixing()
     # a.update_matrix()
     
+    
 def SaveFile(pattern_all,_path='./'):
 
     GT_path = os.path.join(_path, "Pattern.dat")
@@ -268,10 +361,13 @@ if __name__ == '__main__':
     os.system('cls')
     print('run CC_Pattern.py')
     patterns = []
-    sample_N = 200
+    jsonFile = open('./spectial.json','r')
+    spectial_case = json.load(jsonFile)
+    maxlen = len(spectial_case)-1
+    sample_N = 100
     i=0
     while i<sample_N:
-        bin_code, bad_map = CC_main(i,max=2)
+        bin_code, bad_map = CC_main(i,max=maxlen)
         if bad_map == 0:
             i += 1
             patterns.append(bin_code)
